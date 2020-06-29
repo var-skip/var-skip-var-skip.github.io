@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66792257-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-66792257-3');
+    </script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Variable Skipping for Autoregressive Range Density Estimation (ICML 2020)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Highlight-Clean.css">
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        var clicky_site_ids = clicky_site_ids || [];
+        clicky_site_ids.push(101266320);
+    </script>
+    <script async src="//static.getclicky.com/js"></script>
+
+
+    <meta property="og:title" content="Variable Skipping for Autoregressive Range Density Estimation (ICML 2020)">
+    <meta property="og:description" content="We introduce range density estimation, a new downstream task for deep autoregressive models. This task is inspired by an ML-for-systems application, database query optimization. We propose a simple data augmentation technique, termed variable skipping, to significantly speed up approximate inference.">
+    <meta property="og:image" content="https://var-skip.github.io/assets/img/point-vs-range.png">
+    <meta property="og:url" content="https://var-skip.github.io/">
+
+    <meta name="twitter:title" content="Variable Skipping for Autoregressive Range Density Estimation (ICML 2020)">
+    <meta name="twitter:description" content="We introduce range density estimation, a new downstream task for deep autoregressive models. This task is inspired by an ML-for-systems application, database query optimization. We propose a simple data augmentation technique, termed variable skipping, to significantly speed up approximate inference.">
+    <meta name="twitter:image" content="https://var-skip.github.io/assets/img/point-vs-range-twitter.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://var-skip.github.io/">
+    <meta name="twitter:site" content="@zongheng_yang">
+
+</head>
+
+<body>
+    <div class="highlight-clean" style="padding-bottom: 10px;">
+        <div class="container">
+            <h1 class="text-center">Variable Skipping for Autoregressive <br>Range Density Estimation</h1>
+        </div>
+        <div class="container" style="max-width: 720px;">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="text-center" style="margin: 5px;"><a href="https://scholar.google.com/citations?user=wmZTE5gAAAAJ&hl=en">Eric Liang *</a></h5>
+                    <h6 class="text-center">UC Berkeley</h6>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center" style="margin: 5px;"><a class="text-center" href="https://zongheng.me/">Zongheng Yang *</a></h5>
+                    <h6 class="text-center">UC Berkeley</h6>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center" style="margin: 5px;"><a class="text-center" href="https://people.eecs.berkeley.edu/~istoica/">Ion Stoica</a></h5>
+                    <h6 class="text-center">UC Berkeley</h6>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center" style="margin: 5px;"><a class="text-center" href="https://people.eecs.berkeley.edu/~pabbeel/">Pieter Abbeel</a></h5>
+                    <h6 class="text-center">UC Berkeley, Covariant</h6>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center" style="margin: 5px;"><a class="text-center" href="http://rockyduan.com/">Yan Duan</a></h5>
+                    <h6 class="text-center">Covariant</h6>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center" style="margin: 5px;"><a class="text-center" href="http://peterchen.io/">Xi Chen</a></h5>
+                    <h6 class="text-center">Covariant</h6>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center" style="margin-top: 8px;">
+                <h5 class="text-center">ICML 2020</h5>
+            </div>
+        </div>
+        <div class="buttons" style="margin: 8px;">
+            <a class="btn btn-primary" role="button" href="https://arxiv.org/abs/2007.05572">Paper</a><a class="btn btn-light" role="button" href="https://icml.cc/virtual/2020/poster/6199">Talk (ICML)</a><a class="btn btn-light" role="button" href="https://github.com/var-skip/var-skip">GitHub</a>
+        </div>
+        <div class="container" style="max-width: 720px;">
+            <div class="text-center">
+                <img class="img-fluid" src="assets/img/point-vs-range.png" width="400" alt="Point density vs. range density estimation">
+                <em class="text-center" style="display: block;">Point vs. range density estimation. Naive marginalization to estimate range densities takes time exponential in the number of dimensions of the joint distribution.</em>
+            </div>
+        </div>
+    </div>
+
+    <hr style="max-width: 720px;">
+    <div class="container" style="max-width: 720px;">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Summary</h2>
+                <ul>
+                    <li>We propose <em>range density estimation</em>, a new downstream task for autoregressive models.
+                        <ul>
+                            <li>Inspired by ML-for-systems application: database query optimization.</li>
+                        </ul>
+                    </li>
+                    <li><a href="https://zongheng.me/pubs/naru-vldb20.pdf">Prior work</a> uses a forward sampling-style algorithm for approximate inference.</li>
+                    <li>We speed up inference by simple data augmentation: randomly mask inputs at training; invoke learned masks to skip inferring <em>unconstrained</em> variables at inference.</li>
+                    <li>Variable skipping outperforms <a href="https://arxiv.org/abs/1502.03509">multi-order training</a> alone, and can provide additional gains when used in combination.</li>
+                    <li>We invite future research on this relatively under-explored task, where better performance translates to real-world impact (faster query engines).</li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+    <hr style="max-width: 720px;">
+    <div class="container" style="max-width: 720px;">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Abstract</h2>
+                <p>Deep autoregressive models compute point likelihood estimates of individual data points. However, many applications (i.e., database cardinality estimation) require estimating range densities, a capability that is under-explored by current neural density estimation literature. In these applications, fast and accurate range density estimates over high-dimensional data directly impact user-perceived performance. In this paper, we explore a technique, variable skipping, for accelerating range density estimation over deep autoregressive models. This technique exploits the sparse structure of range density queries to avoid sampling unnecessary variables during approximate inference. We show that variable skipping provides 10-100x efficiency improvements when targeting challenging high-quantile error metrics, enables complex applications such as text pattern matching, and can be realized via a simple data augmentation procedure without changing the usual maximum likelihood objective.<br></p>
+            </div>
+        </div>
+    </div>
+    <hr style="max-width: 720px;">
+    <div class="container" style="max-width: 720px;">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>The Range Density Estimation Task</h2>
+                <p>We consider an autoregressive model trained on a high-dimensional discrete dataset. Range density queries require the following probability: $$p_\theta(X_1 \in R_1, \dots, X_n \in R_n)$$where each region $R_i$ is a subset of variable $i$'s domain.</p>
+                <p><strong>Example: database queries.</strong> SQL queries often contain such range/region constraints on columns. Here's an example query on a personnel database:</p>
+                <p>
+                    <code>SELECT * FROM personnel<br />
+                        WHERE salary > 5000<br />
+                        AND age = 28</code>
+                </p>
+
+                <p>This corresponds to $p_\theta(\text{salary} > 5000, \text{age} = 28)$, possibly leaving out unconstrained variables. Database optimizers require these estimates to make queries go fast.</p>
+                <p><strong>Other applications.</strong> In the paper, we show this task is important for another application, text pattern matching: e.g., what's the match probability of <code>.*icml.*</code> in a corpus?</p>
+                <p><strong>Approximate inference and unconstrained variables.</strong> Exact inference of the range query incurs an exponential cost. <a href="https://zongheng.me/pubs/naru-vldb20.pdf">Naru (VLDB 2020)</a> instead adapts forward sampling to perform approximate inference (Algorithm 1).</p>
+                <p>Our insight is to exploit the inherent sparsity in queries: they often access just a few columns out of many in the dataset (e.g., imagine <code>education, city, zip</code> in the above database, which are unconstrained). Such variables should not unnecessarily contribute to the cost of the sampling-based approximate inference.</a></p>
+
+            </div>
+        </div>
+    </div>
+    <hr style="max-width: 720px;">
+    <div class="container" style="max-width: 720px;">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Variable Skipping</h2>
+                <p>To skip sampling unconstrained/absent variables during inference, we propose training special <code>MASK</code> tokens that signify a variable's absence:<br></p>
+                <img class="img-fluid" src="assets/img/train.gif">
+                <p><code>MASK</code> positions are sampled uniformly (see paper for ablation details).</p>
+                <p>When inferring a range query, we directly marginalize all unconstrained variables by invoking these tokens: i.e., each unconstrained variable $i$ is set to its marginalization token, $X_i = \textsf{MASK}_i$.
+            </div>
+        </div>
+    </div>
+    <hr style="max-width: 720px;">
+    <div class="container" style="max-width: 720px;">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Comparison with Masked Language Modeling (MLM)</h2>
+                <p>Masking has been used in related contexts.</p>
+                <p><a href="https://arxiv.org/abs/1810.04805">BERT</a>'s masked language model (MLM) objective optimizes for $\prod_{i \in \text{masked}} p_\theta(X_{_i} | X_\text{unmasked})$, which (i) only predicts the masked tokens and (ii) assumes the masked tokens are independent. Typically, the learned masks are not used downstream.</p>
+
+                <p>In contrast, variable skipping's training objective is still autoregressive: $$\prod_{\forall i} p_\theta(X_{i}\, |\, \text{RandomMask}(X_{\\< i}))$$ i.e., the network is asked to predict all tokens, conditioning on a mix of present and absent (masked) prior information. This can be viewed as input dropout or a form of data augmentation.</p>
+
+                        <p>Lastly, variable skipping uses the learned masked tokens in the downstream task to signify the marginalization of variables.</p>
+            </div>
+        </div>
+    </div>
+    <hr style="max-width: 720px;">
+    <div class="container" style="max-width: 720px;">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Results</h2>
+                <p>We evaluate on discrete tabular datasets, using 1,000 randomly generated range queries. Variable skipping provides 10-100x compute savings for challenging high-quantile error targets compared to baseline approximate inference.</p>
+                <div class="text-center">
+                    <img class="img-fluid" src="assets/img/summary.png"><em class="text-center" style="display: block;">Approximate number of model forward passes required to achieve single-digit inference error at the 99th quantile.</em>
+                </div>
+                <p></p>
+                <p>Compared with <a href="https://arxiv.org/abs/1502.03509">multi-order</a> <a href="https://arxiv.org/abs/1906.08237">training</a>, where each model performs inference using an ensemble of orders, variable skipping outperforms it by up to 10x. It can provide additional gains when used in combination on the more challenging dataset (DMV-Full).</p>
+                <p>Refer to the paper for more results (variable skipping + Transformer for pattern matching; ablation studies).</p>
+
+            </div>
+        </div>
+    </div>
+    <hr style="max-width: 720px;">
+    <div class="container" style="max-width: 720px;">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Citation</h2>
+                <code>@inproceedings{varskip,<br>&nbsp; title={Variable Skipping for Autoregressive Range Density Estimation},<br>&nbsp; author={Eric Liang and Zongheng Yang and Ion Stoica and Pieter Abbeel and Yan Duan and Xi Chen},<br>&nbsp; year={2020},<br>&nbsp; booktitle={Proceedings of the 37th International Conference on Machine Learning}<br>}<br></code>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
